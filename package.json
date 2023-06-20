@@ -1,0 +1,30 @@
+{
+  "name": "adeodist",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "babel ./src --out-dir build",
+    "serve": "node --experimental-json-modules about.js ./build/bin/www",
+    "start": "nodemon -L --exec babel-node ./src/bin/www"
+  },
+  "dependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/plugin-transform-runtime": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/register": "^7.10.5",
+    "@babel/runtime": "^7.10.5",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "dotenv": "^10.0.0",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "sequelize": "^6.32.1",
+    "mysql2": "^2.3.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/node": "^7.10.5",
+    "nodemon": "^2.0.15"
+  }
+}
