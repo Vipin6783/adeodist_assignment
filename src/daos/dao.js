@@ -49,4 +49,22 @@ export default class Dao {
       throw err;
     }
   };
+
+  restore = async (data, options = {}) => {
+    try {
+      return await this.model.restore(data, { raw: true, ...options });
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  };
+
+  destroy = async (data, options = {}) => {
+    try {
+      return await this.model.destroy(data, { raw: true, ...options });
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  };
 }

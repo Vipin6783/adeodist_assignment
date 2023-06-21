@@ -43,7 +43,7 @@ sequelize
     );
   })
   .catch(() => {
-    console.log(">>>>>>>> Unable to connect to with MySQL database. >>>>>>>>");
+    console.log(">>>>>>>> Unable to connect with MySQL database. >>>>>>>>");
   });
 
 const Models = initModels(sequelize);

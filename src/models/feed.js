@@ -26,6 +26,7 @@ module.exports = function (sequelize, DataTypes) {
       sequelize,
       tableName: "feed",
       timestamps: true,
+      paranoid: true,
       indexes: [
         {
           name: "PRIMARY",
