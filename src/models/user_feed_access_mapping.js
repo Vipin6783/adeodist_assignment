@@ -1,7 +1,7 @@
 import sequelize from "sequelize";
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define(
-    "user",
+    "user_feed_access_mapping",
     {
       id: {
         autoIncrement: true,
@@ -9,31 +9,31 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         primaryKey: true,
       },
-      name: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
-      },
-      role_id: {
+      user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "role",
+          model: "user",
           key: "id",
         },
       },
-      email: {
-        type: DataTypes.STRING(100),
-        allowNull: true,
+      feed_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "feed",
+          key: "id",
+        },
       },
-      password: {
-        type: DataTypes.STRING(75),
+      can_delete: {
+        type: DataTypes.BOOLEAN,
         allowNull: true,
       },
     },
     {
       sequelize,
-      tableName: "user",
-      timestamps: true,    
+      tableName: "user_feed_access_mapping",
+      timestamps: true,
       paranoid: true,
       indexes: [
         {
@@ -43,9 +43,14 @@ module.exports = function (sequelize, DataTypes) {
           fields: [{ name: "id" }],
         },
         {
-          name: "fk_user_role_id_idx",
+          name: "fk_admin_feed_access_mapping_user_idx",
           using: "BTREE",
-          fields: [{ name: "role_id" }],
+          fields: [{ name: "user_id" }],
+        },
+        {
+          name: "fk_admin_feed_access_mapping_feed_idx",
+          using: "BTREE",
+          fields: [{ name: "feed_id" }],
         },
       ],
     }

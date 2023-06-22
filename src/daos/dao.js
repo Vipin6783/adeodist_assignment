@@ -59,9 +59,13 @@ export default class Dao {
     }
   };
 
-  destroy = async (data, options = {}) => {
+  destroy = async (criteria = {}, options = {}) => {
     try {
-      return await this.model.destroy(data, { raw: true, ...options });
+      return await this.model.destroy({
+        where: criteria,
+        raw: true,
+        ...options,
+      });
     } catch (err) {
       console.log(err);
       throw err;
