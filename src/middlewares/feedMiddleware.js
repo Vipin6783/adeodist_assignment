@@ -1,36 +1,35 @@
+import FeedDao from "../daos/feedDao";
 import ModulePermissionDao from "../daos/modulePermissionDao";
 import UserFeedAccessMappingDao from "../daos/userFeedAccessMappingDao";
 import { ROLES } from "../utils/appConstant";
 
 const feedMiddleware = async (req, res, next) => {
-  console.log("req ===================== ", req);
+  try {
+    const {
+      loggedInUserId,
+      loggedInRoleId,
+      params: { feedId },
+    } = req;
 
-  const {
-    userId,
-    roleId,
-    params: { feedId },
-  } = req;
+    if (loggedInRoleId != ROLES.SUPER_ADMIN && feedId) {
+      const feedRef = await FeedDao.findOne({ id: feedId });
+      if (!feedRef) {
+        next(new Error("Invalid feed Id"));
+      }
 
-  const modulePermissions = await ModulePermissionDao.findOne({
-    role_id: roleId,
-  });
-  console.log(
-    "modulePermissions ============================ ",
-    modulePermissions
-  );
+      const feedAccess = await UserFeedAccessMappingDao.findOne({
+        user_id: loggedInUserId,
+        feed_id: feedId,
+      });
 
-  req.feedPermissions = modulePermissions.permissions.feed;
-
-  if (roleId != ROLES.SUPER_ADMIN && feedId) {
-    const feedAccess = await UserFeedAccessMappingDao.findOne({
-      user_id: userId,
-      feed_id: feedId,
-    });
-    console.log("feedAccess ============================ ", feedAccess);
-
-    if (!feedAccess) {
-      throw new Error("You have not access for this feed");
+      if (!feedAccess) {
+        next(new Error("You have not access for this feed"));
+      }
+      next();
     }
+    next();
+  } catch (err) {
+    next(err);
   }
 };
 

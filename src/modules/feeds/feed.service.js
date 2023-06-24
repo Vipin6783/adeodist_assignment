@@ -1,9 +1,11 @@
 import FeedDao from "../../daos/feedDao";
 import UserFeedAccessMappingDao from "../../daos/userFeedAccessMappingDao";
 import { PERMISSIONS, ROLES } from "../../utils/appConstant";
+import UserDao from "../../daos/userDao";
 
 class FeedService {
-  createFeed = async ({ name, url, description, feedPermissions }) => {
+  createFeed = async ({ name, url, description, modulePermissions }) => {
+    const feedPermissions = modulePermissions.feed;
     if (!feedPermissions.includes(PERMISSIONS.CREATE)) {
       throw new Error("No permission to create feeds");
     }
@@ -14,49 +16,97 @@ class FeedService {
 
     const feedRef = await FeedDao.create({ name, url, description });
 
-    return { message: "feed created successfully", feedId: feedRef.id };
+    return { message: "Feed created successfully", feedId: feedRef.id };
   };
 
-  getFeedList = async () => {
-    const feedRef = await FeedDao.findAll();
+  getFeedList = async (loggedInUserId, loggedInRoleId, modulePermissions) => {
+    let feeds;
     const feedRecords = [];
-    feedRef.map(({ id, name, url, description }) => {
+    let feedAccess;
+    console.log(
+      "loggedInUserId, loggedInRoleId ======================== ",
+      loggedInUserId,
+      loggedInRoleId
+    );
+
+    if (loggedInRoleId == ROLES.SUPER_ADMIN) {
+      feeds = await FeedDao.findAll();
+      console.log("feeds ======================== ", feeds);
+    } else {
+      feedAccess = await UserFeedAccessMappingDao.findAll({
+        user_id: loggedInUserId,
+      });
+      console.log("feedAccess ======================== ", feedAccess);
+      if (!feedAccess) {
+        throw new Error("You have not access of any feed");
+      }
+      const feedIds = [];
+      feedAccess.map(({ id }) => {
+        feedIds.push(id);
+      });
+      console.log("feedIds ========================== ", feedIds);
+      feeds = await FeedDao.findAllByFeedIds(feedIds);
+      console.log("feeds ========================== ", feeds);
+    }
+    feeds.map(({ id, name, url, description }) => {
       feedRecords.push({
         userId: id,
         name,
         url,
         description,
+        canDelete: feedAccess
+          ? feedAccess.can_delete == true
+            ? true
+            : false
+          : true,
       });
     });
-    return feedRecords;
+
+    return { feedRecords, permissions: modulePermissions.feed };
   };
 
-  getFeedById = async (feedId) => {
+  getFeedDetail = async ({
+    feedId,
+    loggedInUserId,
+    loggedInRoleId,
+    modulePermissions,
+  }) => {
     const feedRef = await FeedDao.findOne({ id: feedId });
-    if (!feedRef) {
-      throw new Error("Invalid feed id");
+    const { id, name, url, description } = feedRef;
+    let feedAccess;
+    if (loggedInRoleId != ROLES.SUPER_ADMIN) {
+      feedAccess = await UserFeedAccessMappingDao.findAll({
+        user_id: loggedInUserId,
+        feed_id: feedId,
+      });
     }
-    const feedRecords = [];
-    // feedRef.map(({ id, name, url, description }) => {
-    //   feedRecords.push({
-    //     userId: id,
-    //     name,
-    //     url,
-    //     description,
-    //   });
-    // });
-    return feedRecords;
+    return {
+      userId: id,
+      name,
+      url,
+      description,
+      canDelete: feedAccess
+        ? feedAccess.can_delete == true
+          ? true
+          : false
+        : true,
+      permissions: modulePermissions.feed,
+    };
   };
 
-  updateFeed = async ({ name, url, description, feedId, feedPermissions }) => {
+  updateFeed = async ({
+    name,
+    url,
+    description,
+    feedId,
+    modulePermissions,
+  }) => {
+    const feedPermissions = modulePermissions.feed;
+
     if (!feedPermissions.includes(PERMISSIONS.UPDATE)) {
       throw new Error("No permission to update feeds");
     }
-    console.log("feedId ========================== ", feedId);
-    const feedRef = await FeedDao.findOne({ id: feedId });
-    if (!feedRef) {
-      throw new Error("Invalid feed id");
-    }
+
     const data = {};
     if (name) {
       data.name = name;
@@ -84,17 +134,139 @@ class FeedService {
         feed_id: feedId,
       });
 
-      if (!feedAccess || (feedAccess && feedAccess.can_delete != true)) {
+      if (feedAccess.can_delete != true) {
         throw new Error("You have not access for this feed");
       }
     }
-    const feedRef = await FeedDao.findOne({ id: feedId });
-    if (!feedRef) {
-      throw new Error("Invalid feed id");
-    }
+
     await FeedDao.destroy({ id: feedId });
 
     return { message: "Feed deleted successfully" };
+  };
+
+  provideFeedAccess = async ({
+    userId,
+    feedIds,
+    modulePermissions,
+    loggedInUserId,
+    loggedInRoleId,
+  }) => {
+    const feedPermissions = modulePermissions.feed;
+    if (!feedPermissions.includes(PERMISSIONS.MODIFY_PERMISSIONS)) {
+      throw new Error("No permission to provide feed access");
+    }
+
+    const userRef = await UserDao.findOne({ id: userId });
+    console.log("userRef ========================= ", userRef);
+    if (!userRef) {
+      throw new Error("Invalid user id");
+    }
+
+    if (loggedInUserId == userId || userRef.role_id == loggedInRoleId) {
+      throw new Error("Invalid Request to provide feed access");
+    } else if (userRef.role_id == ROLES.BASIC_USER) {
+      throw new Error("Basic user cannot provide feed access to any one");
+    } else if (
+      loggedInRoleId == ROLES.ADMIN &&
+      userRef.role_id != ROLES.BASIC_USER
+    ) {
+      throw new Error(
+        "Admin user cannot provide feed access to any one accept basic user"
+      );
+    }
+
+    if (!Array.isArray(feedIds) || feedIds.length < 1) {
+      throw new Error("Feed ids should be an array with at least one item");
+    }
+
+    const feedRecords = await FeedDao.findAllByFeedIdsAndUserId(
+      feedIds,
+      userId
+    );
+    const data = [];
+    console.log("feedRecords =============================== ", feedRecords);
+    for (let i = 0; i < feedRecords.length; i++) {
+      console.log("feedRecords[i] ========== ", feedRecords[i]);
+      const userFeedAccessMappingId = feedRecords[i]["feeds_mapping.id"];
+      console.log(
+        "userFeedAccessMappingId ========== ",
+        userFeedAccessMappingId
+      );
+      if (!userFeedAccessMappingId) {
+        data.push({
+          user_id: userId,
+          feed_id: feedRecords[i].id,
+        });
+      }
+    }
+    console.log("data :>> ", data);
+
+    if (data.length > 0) {
+      await UserFeedAccessMappingDao.bulkCreate(data);
+    }
+
+    return { message: "Feed access provided successfully" };
+  };
+
+  provideFeedDeleteAccess = async ({
+    userId,
+    feedIds,
+    canDelete,
+    modulePermissions,
+    loggedInUserId,
+    loggedInRoleId,
+  }) => {
+    const feedPermissions = modulePermissions.feed;
+
+    if (!feedPermissions.includes(PERMISSIONS.MODIFY_PERMISSIONS)) {
+      throw new Error("No permission to provide feed access");
+    }
+
+    const userRef = await UserDao.findOne({ id: userId });
+    if (!userRef) {
+      throw new Error("Invalid user id");
+    }
+
+    if (loggedInUserId == userId || userRef.role_id == loggedInRoleId) {
+      throw new Error("Invalid Request to provide delete feed access");
+    } else if (userRef.role_id == ROLES.BASIC_USER) {
+      throw new Error(
+        "Basic user cannot provide delete feed access to any one"
+      );
+    } else if (
+      loggedInRoleId == ROLES.ADMIN &&
+      userRef.role_id != ROLES.BASIC_USER
+    ) {
+      throw new Error(
+        "Admin user cannot provide delete feed access to any one accept basic user"
+      );
+    }
+
+    if (!Array.isArray(feedIds) || feedIds.length < 1) {
+      throw new Error("Feed ids should be an array with at least one item");
+    }
+
+    if (typeof canDelete != "boolean") {
+      throw new Error("Invalid value of canDelete");
+    }
+
+    const feedAccess = await UserFeedAccessMappingDao.findAll({
+      user_id: userId,
+      feed_id: feedIds,
+    });
+    const feedAccessIds = [];
+    for (let i = 0; i < feedAccess.length; i++) {
+      feedAccessIds.push(feedAccess[i].id);
+    }
+
+    if (feedAccessIds.length > 0) {
+      await UserFeedAccessMappingDao.update(
+        { can_delete: canDelete },
+        { id: feedAccessIds }
+      );
+    }
+
+    return { message: "Feed delete access provided successfully" };
   };
 }
 

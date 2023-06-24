@@ -3,7 +3,7 @@ export const PERMISSIONS = Object.freeze({
   READ: 2,
   UPDATE: 3,
   DELETE: 4,
-  MODIFY_PERMISSIONS: 4,
+  MODIFY_PERMISSIONS: 5,
 });
 
 export const ROLES = Object.freeze({

@@ -1,14 +1,36 @@
 import UserDao from "../../daos/userDao";
-import { ROLES } from "../../utils/appConstant";
+import { PERMISSIONS, ROLES } from "../../utils/appConstant";
 
 class UserService {
-  createUser = async (name, roleId, emailId, password) => {
-    console.log("email ========================= ", email);
-    if (!name || !roleId || !emailId || !password) {
+  createUser = async ({
+    name,
+    roleId,
+    emailId,
+    loggedInRoleId,
+    modulePermissions,
+  }) => {
+    const password = "Adeodist123"; // we will generate this dynamically and send mail to user and save in encrypted form
+    const userPermissions = modulePermissions.user;
+    if (!userPermissions.includes(PERMISSIONS.CREATE)) {
+      throw new Error("No permission to create users");
+    }
+    if (roleId == loggedInRoleId) {
+      throw new Error("Invalid Request to create user");
+    } else if (loggedInRoleId == ROLES.ADMIN && roleId != ROLES.BASIC_USER) {
+      throw new Error("Admin user can create basic users only");
+    }
+
+    if (!name || !roleId || !emailId) {
       throw new Error("All fields are mandatory");
     }
     if (!Object.values(ROLES).includes(roleId)) {
       throw new Error("Invalid role id");
+    }
+
+    const userDetail = await UserDao.findOne({ email: emailId });
+
+    if (userDetail) {
+      throw new Error("Email already exist. Please use different emailId");
     }
     const userRef = await UserDao.create({
       name,
@@ -20,21 +42,66 @@ class UserService {
     return { userId: userRef.id, message: "User create successfully" };
   };
 
-  getUserList = async (userId, roleId) => {
-    const userRef = await UserDao.findAll();
+  getUserList = async (loggedInRoleId, modulePermissions) => {
+    const userPermissions = modulePermissions.user;
+    if (!userPermissions.includes(PERMISSIONS.READ)) {
+      throw new Error("No permission to update users");
+    }
+    let userList;
+    if (loggedInRoleId == ROLES.ADMIN) {
+      userList = await UserDao.findAll({ role_id: ROLES.BASIC_USER });
+    } else {
+      userList = await UserDao.findAll({
+        role_id: [ROLES.ADMIN, ROLES.BASIC_USER],
+      });
+    }
     const userRecord = [];
-    userRef.map(({ id, name, emailId, password }) => {
+    userList.map(({ id, name, role_id, email }) => {
       userRecord.push({
         userId: id,
         name,
-        emailId,
-        password,
+        emailId: email,
+        roleId: role_id,
       });
     });
     return userRecord;
   };
 
-  updateUser = async ({ name, roleId, emailId, password, userId }) => {
+  getUserDetail = async (userId, loggedInRoleId, modulePermissions) => {
+    const userPermissions = modulePermissions.user;
+    if (!userPermissions.includes(PERMISSIONS.READ)) {
+      throw new Error("No permission to update users");
+    }
+
+    const userRef = await UserDao.findOne({ id: userId });
+    if (!userRef) {
+      throw new Error("Invalid user Id");
+    }
+    const { id, name, email, role_id } = userRef;
+    if (role_id == loggedInRoleId) {
+      throw new Error("User cannot fetch your detail");
+    } else if (loggedInRoleId == ROLES.ADMIN && role_id != ROLES.BASIC_USER) {
+      throw new Error(
+        "Invalid request, Admin user can fetch the basic users detail only"
+      );
+    }
+    return {
+      userId: id,
+      name,
+      emailId: email,
+      roleId: role_id,
+    };
+  };
+
+  updateUser = async ({ name, roleId, emailId, userId, modulePermissions }) => {
+    const userPermissions = modulePermissions.user;
+    if (!userPermissions.includes(PERMISSIONS.UPDATE)) {
+      throw new Error("No permission to update users");
+    }
+    if (roleId == loggedInRoleId) {
+      throw new Error("Invalid Request to update user");
+    }
+
     const userRef = await UserDao.findOne({ id: userId });
     if (!userRef) {
       throw new Error("Invalid user id");
@@ -52,9 +119,6 @@ class UserService {
     if (emailId) {
       data.email = emailId;
     }
-    if (password) {
-      data.password = password;
-    }
     if (Object.keys(data).length < 1) {
       throw new Error("Invalid user update request");
     }
@@ -64,7 +128,11 @@ class UserService {
     return { message: "User updated successfully" };
   };
 
-  deleteUser = async (userId) => {
+  deleteUser = async (userId, modulePermissions) => {
+    const userPermissions = modulePermissions.user;
+    if (!userPermissions.includes(PERMISSIONS.DELETE)) {
+      throw new Error("No permission to update users");
+    }
     const userRef = await UserDao.findOne({ id: userId });
 
     if (!userRef) {

@@ -26,6 +26,14 @@ function initModels(sequelize) {
     as: "user_role",
     foreignKey: "role_id",
   });
+  user_feed_access_mapping.belongsTo(feed, {
+    as: "feeds",
+    foreignKey: "feed_id",
+  });
+  feed.hasMany(user_feed_access_mapping, {
+    as: "feeds_mapping",
+    foreignKey: "feed_id",
+  });
 
   return {
     role,

@@ -18,7 +18,7 @@ module.exports = function (sequelize, DataTypes) {
         },
       },
       permissions: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.JSON,
         allowNull: false,
       },
     },

@@ -9,30 +9,43 @@ feedRouter.post(
   authMiddleware,
   feedMiddleware,
   FeedController.createFeed
-); 
-feedRouter.get(
-  "/read/feed/list",
-  authMiddleware,
-//   feedMiddleware,
-  FeedController.getFeedList
-); 
+);
+
+feedRouter.get("/read/feed/list", authMiddleware, FeedController.getFeedList);
+
 feedRouter.get(
   "/read/feed/:feedId",
   authMiddleware,
-//   feedMiddleware,
-  FeedController.getFeedById
-); 
+  feedMiddleware,
+  FeedController.getFeedDetail
+);
+
 feedRouter.put(
   "/update/feed/:feedId",
   authMiddleware,
-//   feedMiddleware,
+  feedMiddleware,
   FeedController.updateFeed
-); 
+);
+
 feedRouter.delete(
   "/delete/feed/:feedId",
   authMiddleware,
-//   feedMiddleware,
+  feedMiddleware,
   FeedController.deleteFeed
-); 
+);
+
+feedRouter.post(
+  "/provide/feed/access",
+  authMiddleware,
+  FeedController.provideFeedAccess
+);
+
+feedRouter.put(
+  "/provide/feed/delete/access",
+  authMiddleware,
+  FeedController.provideFeedDeleteAccess
+);
+
+
 
 export default feedRouter;

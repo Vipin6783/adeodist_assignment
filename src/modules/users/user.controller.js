@@ -3,8 +3,18 @@ import UserService from "./user.service";
 class UserController {
   createUser = async (req, res, next) => {
     try {
-      const {body: {name, roleId, emailId, password} } = req;
-      const result = await UserService.createUser(name, roleId, emailId, password);
+      const {
+        body: { name, roleId, emailId },
+        loggedInRoleId,
+        modulePermissions,
+      } = req;
+      const result = await UserService.createUser({
+        name,
+        roleId,
+        emailId,
+        loggedInRoleId,
+        modulePermissions,
+      });
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -13,8 +23,29 @@ class UserController {
 
   getUserList = async (req, res, next) => {
     try {
-      const { userId, roleId } = req;
-      const result = await UserService.getUserList(userId, roleId);
+      const { loggedInRoleId, modulePermissions } = req;
+      const result = await UserService.getUserList(
+        loggedInRoleId,
+        modulePermissions
+      );
+      return res.status(200).json(result);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getUserDetail = async (req, res, next) => {
+    try {
+      const {
+        params: { userId },
+        loggedInRoleId,
+        modulePermissions,
+      } = req;
+      const result = await UserService.getUserDetail(
+        userId,
+        loggedInRoleId,
+        modulePermissions
+      );
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -23,8 +54,17 @@ class UserController {
 
   updateUser = async (req, res, next) => {
     try {
-      const {body: {name, roleId, emailId, password}, params: {userId} } = req;
-      const result = await UserService.updateUser({name, roleId, emailId, password, userId});
+      const {
+        body: { name, roleId, emailId, modulePermissions },
+        params: { userId },
+      } = req;
+      const result = await UserService.updateUser({
+        name,
+        roleId,
+        emailId,
+        userId,
+        modulePermissions,
+      });
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -33,8 +73,11 @@ class UserController {
 
   deleteUser = async (req, res, next) => {
     try {
-      const { params: {userId} } = req;
-      const result = await UserService.deleteUser(userId);
+      const {
+        params: { userId },
+        modulePermissions,
+      } = req;
+      const result = await UserService.deleteUser(userId, modulePermissions);
       return res.status(200).json(result);
     } catch (err) {
       next(err);

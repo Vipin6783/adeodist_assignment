@@ -31,6 +31,6 @@ export const ACCESS_TOKEN_SECRET_KEY =
   process.env.REFRESH_TOKEN_SECRET_KEY || "uytrkjszcnkzdchgfdjj";
 export const TOKEN_HEADER_KEY = process.env.JWT_SECRET_KEY || "authorization";
 export const ACCESS_TOKEN_EXPIRY_IN_MIN =
-  process.env.ACCESS_TOKEN_EXPIRY_IN_MIN || "10m";
+  process.env.ACCESS_TOKEN_EXPIRY_IN_MIN || "100m";
 export const REFRESH_TOKEN_EXPIRY_IN_MIN =
-  process.env.REFRESH_TOKEN_EXPIRY_IN_MIN || "15m";
+  process.env.REFRESH_TOKEN_EXPIRY_IN_MIN || "150m";
