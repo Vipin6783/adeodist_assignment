@@ -7,7 +7,6 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 app.use(
   "/",
   (req, res, next) => {
@@ -24,11 +23,11 @@ app.use(
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
 // error handler
 app.use(function (err, req, res, next) {
   logger.log(`error >>> ${err}`);
   return res.status(500).json({ error: err.message });
+  
 });
 
 export default app;

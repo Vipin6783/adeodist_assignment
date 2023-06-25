@@ -51,9 +51,10 @@ class FeedController {
         loggedInRoleId,
         modulePermissions,
       });
-
       logger.log(`response$>>> ${JSON.stringify(result)}`);
+
       return res.status(200).json(result);
+
     } catch (err) {
       next(err);
     }

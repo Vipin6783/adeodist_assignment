@@ -23,25 +23,29 @@ class FeedService {
     let feeds;
     const feedRecords = [];
     let feedAccess;
-
+ 
     if (loggedInRoleId == ROLES.SUPER_ADMIN) {
       feeds = await FeedDao.findAll();
     } else {
       feedAccess = await UserFeedAccessMappingDao.findAll({
         user_id: loggedInUserId,
       });
-      if (!feedAccess) {
+
+      if (!feedAccess || feedAccess.length < 1) {
         throw new Error("You have not access of any feed");
       }
       const feedIds = [];
-      feedAccess.map(({ id }) => {
-        feedIds.push(id);
+      feedAccess.map(({ feed_id }) => {
+        feedIds.push(feed_id);
       });
-      feeds = await FeedDao.findAllByFeedIds(feedIds);
+      feeds = await FeedDao.findAll({ id: feedIds });
+    }
+    if (!feeds || feeds.length < 1) {
+      throw new Error("No feed found");
     }
     feeds.map(({ id, name, url, description }) => {
       feedRecords.push({
-        userId: id,
+        feedId: id,
         name,
         url,
         description,
@@ -66,13 +70,14 @@ class FeedService {
     const { id, name, url, description } = feedRef;
     let feedAccess;
     if (loggedInRoleId != ROLES.SUPER_ADMIN) {
-      feedAccess = await UserFeedAccessMappingDao.findAll({
+      feedAccess = await UserFeedAccessMappingDao.findOne({
         user_id: loggedInUserId,
         feed_id: feedId,
       });
     }
+
     return {
-      userId: id,
+      feedId: id,
       name,
       url,
       description,
@@ -153,7 +158,7 @@ class FeedService {
 
     if (loggedInUserId == userId || userRef.role_id == loggedInRoleId) {
       throw new Error("Invalid Request to provide feed access");
-    } else if (userRef.role_id == ROLES.BASIC_USER) {
+    } else if (loggedInRoleId == ROLES.BASIC_USER) {
       throw new Error("Basic user cannot provide feed access to any one");
     } else if (
       loggedInRoleId == ROLES.ADMIN &&
@@ -212,7 +217,7 @@ class FeedService {
 
     if (loggedInUserId == userId || userRef.role_id == loggedInRoleId) {
       throw new Error("Invalid Request to provide delete feed access");
-    } else if (userRef.role_id == ROLES.BASIC_USER) {
+    } else if (loggedInRoleId == ROLES.BASIC_USER) {
       throw new Error(
         "Basic user cannot provide delete feed access to any one"
       );

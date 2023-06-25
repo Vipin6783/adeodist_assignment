@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import { ACCESS_TOKEN_SECRET_KEY, TOKEN_HEADER_KEY } from "../config";
 import ModulePermissionDao from "../daos/modulePermissionDao";
 import AppUtility from "../utils/appUtility";
-import logger from "../utils/logger";
 
 const authMiddleware = async (req, res, next) => {
   try {

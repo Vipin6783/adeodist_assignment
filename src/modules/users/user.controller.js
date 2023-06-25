@@ -58,8 +58,10 @@ class UserController {
   updateUser = async (req, res, next) => {
     try {
       const {
-        body: { name, roleId, emailId, modulePermissions },
+        body: { name, roleId, emailId },
         params: { userId },
+        modulePermissions,
+        loggedInRoleId
       } = req;
       const result = await UserService.updateUser({
         name,
@@ -67,6 +69,7 @@ class UserController {
         emailId,
         userId,
         modulePermissions,
+        loggedInRoleId
       });
       logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);

@@ -1,5 +1,4 @@
 import FeedDao from "../daos/feedDao";
-import ModulePermissionDao from "../daos/modulePermissionDao";
 import UserFeedAccessMappingDao from "../daos/userFeedAccessMappingDao";
 import { ROLES } from "../utils/appConstant";
 
@@ -10,8 +9,9 @@ const feedMiddleware = async (req, res, next) => {
       loggedInRoleId,
       params: { feedId },
     } = req;
-
+   
     if (loggedInRoleId != ROLES.SUPER_ADMIN && feedId) {
+      
       const feedRef = await FeedDao.findOne({ id: feedId });
       if (!feedRef) {
         next(new Error("Invalid feed Id"));

@@ -45,7 +45,7 @@ class UserService {
       password,
     });
 
-    return { userId: userRef.id, message: "User create successfully" };
+    return { userId: userRef.id, message: "User created successfully" };
   };
 
   getUserList = async (loggedInRoleId, modulePermissions) => {
@@ -99,7 +99,10 @@ class UserService {
     };
   };
 
-  updateUser = async ({ name, roleId, emailId, userId, modulePermissions }) => {
+  updateUser = async ({ name, roleId, emailId, userId, modulePermissions, loggedInRoleId }) => {
+    console.log('emailId ====================== ', emailId);
+    console.log('modulePermissions ====================== ', modulePermissions);
+
     const userPermissions = modulePermissions.user;
     if (!userPermissions.includes(PERMISSIONS.UPDATE)) {
       throw new Error("No permission to update users");
@@ -107,8 +110,11 @@ class UserService {
     if (roleId == loggedInRoleId) {
       throw new Error("Invalid Request to update user");
     }
+    console.log('userId ====================== ', userId);
 
     const userRef = await UserDao.findOne({ id: userId });
+    console.log('userRef ====================== ', userRef);
+
     if (!userRef) {
       throw new Error("Invalid user id");
     }
@@ -128,7 +134,7 @@ class UserService {
     if (Object.keys(data).length < 1) {
       throw new Error("Invalid user update request");
     }
-
+console.log('data, userId =========================== ', data, userId);
     await UserDao.update(data, { id: userId });
 
     return { message: "User updated successfully" };
