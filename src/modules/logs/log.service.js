@@ -9,26 +9,13 @@ class LogService {
     }
 
     const recentFile = AppUtility.getMostRecentFile(LOG_SAVING_FOLDER_PATH);
-    console.log("recentFile ====================== ", recentFile);
 
     if (recentFile) {
       const logData = await fs.readFileSync(
         LOG_SAVING_FOLDER_PATH + "/" + recentFile.file,
         "utf8"
       );
-      // (err, data) => {
-      //   console.log("data=========================", data);
-      //   if (err) {
-      //     console.log("==========================err", err);
-      //     throw new Error("err");
-      //   } else {
-      //     console.log("data=========================", data);
-      //     return data;
-      //   }
-      // }
-      // );
-      console.log("logData ============================= ", logData);
-      return {logData};
+      return { logData };
     }
   };
 }

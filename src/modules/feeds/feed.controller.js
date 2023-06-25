@@ -1,5 +1,5 @@
 import FeedService from "./feed.service";
-
+import logger from "../../utils/logger";
 class FeedController {
   createFeed = async (req, res, next) => {
     try {
@@ -13,9 +13,10 @@ class FeedController {
         description,
         modulePermissions,
       });
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
-      console.log("err =================in create feed ", err);
       next(err);
     }
   };
@@ -28,6 +29,8 @@ class FeedController {
         loggedInRoleId,
         modulePermissions
       );
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -48,6 +51,8 @@ class FeedController {
         loggedInRoleId,
         modulePermissions,
       });
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -69,6 +74,8 @@ class FeedController {
         feedId,
         modulePermissions,
       });
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -87,6 +94,8 @@ class FeedController {
         loggedInUserId,
         loggedInRoleId
       );
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -108,9 +117,11 @@ class FeedController {
         loggedInUserId,
         loggedInRoleId,
       });
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
+
       return res.status(200).json(result);
     } catch (err) {
-      console.log("err =================in create feed ", err);
       next(err);
     }
   };
@@ -123,6 +134,7 @@ class FeedController {
         loggedInUserId,
         loggedInRoleId,
       } = req;
+
       const result = await FeedService.provideFeedDeleteAccess({
         userId,
         feedIds,
@@ -131,9 +143,11 @@ class FeedController {
         loggedInUserId,
         loggedInRoleId,
       });
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
+
       return res.status(200).json(result);
     } catch (err) {
-      console.log("err =================in create feed ", err);
       next(err);
     }
   };

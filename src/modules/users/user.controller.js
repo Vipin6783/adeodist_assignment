@@ -1,5 +1,5 @@
 import UserService from "./user.service";
-
+import logger from "../../utils/logger";
 class UserController {
   createUser = async (req, res, next) => {
     try {
@@ -15,6 +15,7 @@ class UserController {
         loggedInRoleId,
         modulePermissions,
       });
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -28,6 +29,7 @@ class UserController {
         loggedInRoleId,
         modulePermissions
       );
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -46,6 +48,7 @@ class UserController {
         loggedInRoleId,
         modulePermissions
       );
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -65,6 +68,7 @@ class UserController {
         userId,
         modulePermissions,
       });
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -78,6 +82,7 @@ class UserController {
         modulePermissions,
       } = req;
       const result = await UserService.deleteUser(userId, modulePermissions);
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);

@@ -27,7 +27,6 @@ const authMiddleware = async (req, res, next) => {
       next(new Error("Invalid token"));
     }
   } catch (error) {
-    logger.log("error=============", error)
     next(new Error("Invalid token"));
   }
 };

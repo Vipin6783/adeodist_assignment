@@ -1,5 +1,6 @@
 import { TOKEN_HEADER_KEY } from "../../config";
 import AuthService from "./auth.service";
+import logger from "../../utils/logger";
 
 class AuthController {
   login = async (req, res, next) => {
@@ -11,6 +12,8 @@ class AuthController {
         emailId,
         password,
       );
+
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);
@@ -24,6 +27,8 @@ class AuthController {
       const result = await AuthService.regenerateToken(
         refreshToken
       );
+      
+      logger.log(`response$>>> ${JSON.stringify(result)}`);
       return res.status(200).json(result);
     } catch (err) {
       next(err);

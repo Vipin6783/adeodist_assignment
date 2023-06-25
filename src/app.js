@@ -8,10 +8,18 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/", (req,res,next)=>{
-  logger.log(`body$`)
-
-},indexRouter);
+app.use(
+  "/",
+  (req, res, next) => {
+    logger.log(
+      `method$>>> ${req.method}, path$>>> ${req.path}, params$>>> ${
+        req.params
+      }, body$>>> ${JSON.stringify(req.body)}`
+    );
+    next();
+  },
+  indexRouter
+);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
@@ -19,10 +27,7 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  logger.log("req===============", req);
-  logger.log("res===============", res);
-
-  logger.log("err===============", err);
+  logger.log(`error >>> ${err}`);
   return res.status(500).json({ error: err.message });
 });
 

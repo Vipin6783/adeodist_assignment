@@ -1,3 +1,4 @@
+import logger from "../utils/logger";
 export default class Dao {
   constructor(model) {
     this.model = model;
@@ -11,7 +12,7 @@ export default class Dao {
         ...options,
       });
     } catch (err) {
-      console.log(err);
+      logger.log(`Error found while calling findOne function >>> ${err}`);
       throw err;
     }
   };
@@ -24,7 +25,7 @@ export default class Dao {
         ...options,
       });
     } catch (err) {
-      console.log(err);
+      logger.log(`Error found while calling findAll function >>> ${err}`);
       throw err;
     }
   };
@@ -37,7 +38,7 @@ export default class Dao {
         ...options,
       });
     } catch (err) {
-      console.log(err);
+      logger.log(`Error found while calling update function >>> ${err}`);
     }
   };
 
@@ -45,7 +46,7 @@ export default class Dao {
     try {
       return await this.model.create(data, { raw: true, ...options });
     } catch (err) {
-      console.log(err);
+      logger.log(`Error found while calling create function >>> ${err}`);
       throw err;
     }
   };
@@ -54,7 +55,7 @@ export default class Dao {
     try {
       return await this.model.restore(data, { raw: true, ...options });
     } catch (err) {
-      console.log(err);
+      logger.log(`Error found while calling restore function >>> ${err}`);
       throw err;
     }
   };
@@ -67,7 +68,7 @@ export default class Dao {
         ...options,
       });
     } catch (err) {
-      console.log(err);
+      logger.log(`Error found while calling destroy function >>> ${err}`);
       throw err;
     }
   };

@@ -23,20 +23,13 @@ class FeedService {
     let feeds;
     const feedRecords = [];
     let feedAccess;
-    console.log(
-      "loggedInUserId, loggedInRoleId ======================== ",
-      loggedInUserId,
-      loggedInRoleId
-    );
 
     if (loggedInRoleId == ROLES.SUPER_ADMIN) {
       feeds = await FeedDao.findAll();
-      console.log("feeds ======================== ", feeds);
     } else {
       feedAccess = await UserFeedAccessMappingDao.findAll({
         user_id: loggedInUserId,
       });
-      console.log("feedAccess ======================== ", feedAccess);
       if (!feedAccess) {
         throw new Error("You have not access of any feed");
       }
@@ -44,9 +37,7 @@ class FeedService {
       feedAccess.map(({ id }) => {
         feedIds.push(id);
       });
-      console.log("feedIds ========================== ", feedIds);
       feeds = await FeedDao.findAllByFeedIds(feedIds);
-      console.log("feeds ========================== ", feeds);
     }
     feeds.map(({ id, name, url, description }) => {
       feedRecords.push({
@@ -118,7 +109,6 @@ class FeedService {
       data.description = description;
     }
 
-    console.log("data ================== ", data);
     if (Object.keys(data).length < 1) {
       throw new Error("Invalid feed update request");
     }
@@ -157,7 +147,6 @@ class FeedService {
     }
 
     const userRef = await UserDao.findOne({ id: userId });
-    console.log("userRef ========================= ", userRef);
     if (!userRef) {
       throw new Error("Invalid user id");
     }
@@ -184,14 +173,9 @@ class FeedService {
       userId
     );
     const data = [];
-    console.log("feedRecords =============================== ", feedRecords);
     for (let i = 0; i < feedRecords.length; i++) {
-      console.log("feedRecords[i] ========== ", feedRecords[i]);
       const userFeedAccessMappingId = feedRecords[i]["feeds_mapping.id"];
-      console.log(
-        "userFeedAccessMappingId ========== ",
-        userFeedAccessMappingId
-      );
+
       if (!userFeedAccessMappingId) {
         data.push({
           user_id: userId,
@@ -199,7 +183,6 @@ class FeedService {
         });
       }
     }
-    console.log("data :>> ", data);
 
     if (data.length > 0) {
       await UserFeedAccessMappingDao.bulkCreate(data);
