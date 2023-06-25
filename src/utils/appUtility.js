@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 class AppUtility {
   parseJwt = (token) => {
     var base64Content = token.split(".")[1];
@@ -15,6 +17,22 @@ class AppUtility {
       return JSON.parse(jsonPayload);
     }
     return null;
+  };
+
+  getMostRecentFile = (dir) => {
+    const files = this.orderRecentFiles(dir);
+    return files.length ? files[0] : undefined;
+  };
+
+  orderRecentFiles = (dir) => {
+    return fs
+      .readdirSync(dir)
+      .filter((file) => fs.lstatSync(path.join(dir, file)).isFile())
+      .map((file) => ({
+        file,
+        mtime: fs.lstatSync(path.join(dir, file)).mtime,
+      }))
+      .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
   };
 }
 

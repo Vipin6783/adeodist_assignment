@@ -9,22 +9,28 @@ class UserService {
     loggedInRoleId,
     modulePermissions,
   }) => {
-    const password = "Adeodist123"; // we will generate this dynamically and send mail to user and save in encrypted form
     const userPermissions = modulePermissions.user;
     if (!userPermissions.includes(PERMISSIONS.CREATE)) {
       throw new Error("No permission to create users");
     }
-    if (roleId == loggedInRoleId) {
-      throw new Error("Invalid Request to create user");
-    } else if (loggedInRoleId == ROLES.ADMIN && roleId != ROLES.BASIC_USER) {
-      throw new Error("Admin user can create basic users only");
-    }
+    let password;
 
     if (!name || !roleId || !emailId) {
       throw new Error("All fields are mandatory");
     }
-    if (!Object.values(ROLES).includes(roleId)) {
+    if (![ROLES.ADMIN, ROLES.BASIC_USER].includes(roleId)) {
       throw new Error("Invalid role id");
+    }
+    if (roleId == ROLES.ADMIN) {
+      password = "Admin123"; // we can generate password dynamically and send mail to user and save in encrypted form in db for security purpose
+    } else {
+      password = "User123"; // we can generate password dynamically and send mail to user and save in encrypted form in db for security purpose
+    }
+
+    if (roleId == loggedInRoleId) {
+      throw new Error("Invalid Request to create user");
+    } else if (loggedInRoleId == ROLES.ADMIN && roleId != ROLES.BASIC_USER) {
+      throw new Error("Admin user can create basic users only");
     }
 
     const userDetail = await UserDao.findOne({ email: emailId });

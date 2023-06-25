@@ -1,15 +1,12 @@
 import createError from "http-errors";
 import express from "express";
-import path from "path";
-import logger from "morgan";
 
 import indexRouter from "./indexRoute";
+import logger from "./utils/logger";
 const app = express();
 
-app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 // catch 404 and forward to error handler
@@ -19,15 +16,8 @@ app.use(function (req, res, next) {
 
 // error handler
 app.use(function (err, req, res, next) {
-  console.log("err ===================== ", err);
-  // // set locals, only providing error in development
-  // res.locals.message = err.message;
-  // res.locals.error = req.app.get("env") === "development" ? err : {};
-
-  // // render the error page
-  // res.status(err.status || 500);
-  // res.render('error')
-  return res.status(500).json({error: err.message});
+  logger.log("err===============", err);
+  return res.status(500).json({ error: err.message });
 });
 
 export default app;
