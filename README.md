@@ -17,6 +17,12 @@ Install to run my project
 
 -Use the dump from script folder
 
+## Server start
+
+Use command to run server
+
+- npm start
+
 ## 🔗 Links
 
 https://github.com/Vipin6783/adeodist_assignment

@@ -23,7 +23,8 @@ class FeedService {
     let feeds;
     const feedRecords = [];
     let feedAccess;
- 
+    const feedDeleteAccessRecord = [];
+
     if (loggedInRoleId == ROLES.SUPER_ADMIN) {
       feeds = await FeedDao.findAll();
     } else {
@@ -35,22 +36,33 @@ class FeedService {
         throw new Error("You have not access of any feed");
       }
       const feedIds = [];
-      feedAccess.map(({ feed_id }) => {
+      feedAccess.map(({ feed_id, can_delete }) => {
         feedIds.push(feed_id);
+        feedDeleteAccessRecord.push({ feed_id, can_delete });
       });
       feeds = await FeedDao.findAll({ id: feedIds });
     }
+
     if (!feeds || feeds.length < 1) {
       throw new Error("No feed found");
     }
+ 
     feeds.map(({ id, name, url, description }) => {
+      let canDelete 
+      if (feedDeleteAccessRecord.length > 0) {
+         canDelete = feedDeleteAccessRecord.filter((item) => {
+          if (item.feed_id == id) {
+            return item.feed_id;
+          }
+        });
+      }
       feedRecords.push({
         feedId: id,
         name,
         url,
         description,
-        canDelete: feedAccess
-          ? feedAccess.can_delete == true
+        canDelete: canDelete
+          ? canDelete[0].can_delete == true
             ? true
             : false
           : true,
